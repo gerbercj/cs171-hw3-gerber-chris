@@ -18,18 +18,35 @@
         type: 'GET',
         cache: false,
         success: function(data) {
-            var root,allData, body, table;
-            root = $("<div></div>")
+            // initialize with custom header 
+            var csvLines = ["year,est1,est2,est3,est4,est5"];
+
+            var root = $("<div></div>")
             root.html(data.responseText)
 
-            var content = root.find("#content"); // find all the nodes that have ID "content"
-            var h2s = content.find(".mw-headline"); // search in all "content" nodes for nodes of class ".mw-headline"
+            // Find the rows inside the wikitable
+            var content = root.find("#content");
+            var table = content.find("table.wikitable");
+            var trs = table.find("tr:gt(0)");
 
-            $.each(h2s, function(index, value) {
-                console.log($(value).text()); // print text
+            $.each(trs, function(row, rowValue) {
+                var line = [];
+                $.each(rowValue.cells, function(col, colValue) {
+                    // We only care about the first six columns of data
+                    if (col < 6) line.push(convertToInt(colValue.textContent));
+                });
+                var lineText = line.join();
+
+                // Skip line if no year in first column
+                if (lineText.match(/^,/)) return true;
+
+                // Skip line if no values in data columns
+                if (lineText.match(/,,,,,$/)) return true;
+
+                csvLines.push(lineText);
             });
-			
-			saveToFile(["Hello World"],"test.txt")
+
+            saveToFile(csvLines, 'timeline.csv');
         },
         error: function() {
             return console.log("error");
@@ -37,9 +54,11 @@
     });
 
     convertToInt = function(s) {
-        return parseInt(s.replace(/,/g, ""), 10);
+        var theInt = parseInt(s.replace(/,/g, ""), 10);
+        // Let's clean up NaN here:
+        return (isNaN(theInt)) ? "" : theInt;
     };
-	
+
     /* takes an array of strings
        and writes them line by line into a file given by filename
      */
@@ -62,12 +81,8 @@
      String.prototype.endsWith = function(suffix) {
        return this.indexOf(suffix, this.length - suffix.length) !== -1;
      };
-	
-
-
 
 </script>
-
 
 </body>
 </html>
