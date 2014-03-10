@@ -7,42 +7,48 @@
         .axis path,
         .axis line {
             fill: none;
-            stroke: lightgrey; }
+            stroke: lightgrey;
+            shape-rendering: crispEdges;
+        }
 
         .brush .extent {
             stroke: black;
             fill-opacity: 0.125;
-            shape-rendering: crispEdges; }
+            shape-rendering: crispEdges;
+        }
 
         .brush .handle {
             stroke: black;
             fill-opacity: 0.125; }
 
-        .timeArea {
-            fill: steelblue;
-				}
-
         .path {
             stroke: steelblue;
             fill: none;
-
         }
 
         .overviewPath {
             stroke-width:1;
+        }
 
+        .overviewCircle {
+            fill:steelblue;
         }
 
         .detailPath {
             stroke-width:2;
+            clip-path: url(#clip);
         }
 
-
+        .detailCircle {
+            fill:steelblue;
+            clip-path: url(#clip);
+        }
 
         .detailArea {
             stroke: none;
             fill:steelblue;
             fill-opacity:0.5;
+            clip-path: url(#clip);
         }
 
     </style>
