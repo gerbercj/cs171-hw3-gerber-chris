@@ -116,6 +116,27 @@ d3.csv("unHealth.csv", type, function(data) {
       .attr("y", -6)
       .attr("height", bbOverview.h + 7);
 
+  events = [
+    {x:280, y:5, start:'Nov 2011', end:'Jul 2012', text:'<tspan text-decoration="underline">Initial spike in activity</tspan> &#x2192;'},
+    {x:645, y:45, start:'Nov 2012', end:'Jul 2013', text:'&#x2196; <tspan text-decoration="underline">New steady state</tspan>' }
+  ]
+
+  var eventClickCallback = function(start, end) {
+    brush.extent([parseDate(start), parseDate(end)]);
+    svg.select('.brush').call(brush);
+    brushed();
+  }
+
+  overview.selectAll(".events")
+    .data(events)
+    .enter().append("g")
+    .attr("class","events")
+    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    .append("text")
+    .html(function(d) { return d.text; })
+    .attr("class", "event")
+    .on("click", function(d) { return eventClickCallback(d.start, d.end); });
+
   detail.append("path")
     .datum(data)
     .attr("class", "path detailPath")
