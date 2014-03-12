@@ -9,7 +9,7 @@ margin = {
 
 width = 960 - margin.left - margin.right;
 
-height = 300 - margin.bottom - margin.top;
+height = 600 - margin.bottom - margin.top;
 
 bbVis = {
   x: 0 + 100,
@@ -41,12 +41,60 @@ d3.csv("timeline.csv", function(data) {
     for (var i=1; i<6; i++) {
       var value = parseInt(eval("d.est"+i))
       if (isNaN(value)) {
-        dataSet.values[i-1].push({value:0, real:false});
+        dataSet.values[i-1].push({value:0, type:"none"});
       } else {
-        dataSet.values[i-1].push({value:parseInt(eval("d.est"+i)), real:true});
+        dataSet.values[i-1].push({value:parseInt(eval("d.est"+i)), type:"real"});
       }
     }
   });
+
+  // Interpolate missing values helpers
+  function lowerPoint(year, series) {
+    var result = {year:NaN, value:NaN}
+    for (var i = 0; i < dataSet.years.length; i++) {
+      if (dataSet.years[i] >= year) break;
+      if (dataSet.values[series][i].type == "real") {
+        result.year = dataSet.years[i];
+        result.value = dataSet.values[series][i].value;
+      }
+    }
+    return result;
+  }
+
+  function higherPoint(year, series) {
+    var result = {year:NaN, value:NaN}
+    for (var i = dataSet.years.length - 1; i >= 0; i--) {
+      if (dataSet.years[i] <= year) break;
+      if (dataSet.values[series][i].type == "real") {
+        result.year = dataSet.years[i];
+        result.value = dataSet.values[series][i].value;
+      }
+    }
+    return result;
+  }
+
+  function interpolatedPoint(year, series) {
+    var low = lowerPoint(year, series);
+    var high = higherPoint(year, series);
+    if (isNaN(low.year) || isNaN(high.year)) return NaN;
+    return low.value + (high.value-low.value) * (year - low.year) / (high.year-low.year);
+  }
+
+  // Actually do the interpolation
+  dataSet.years.forEach(function(year, i) {
+    dataSet.values.forEach(function(series, j) {
+      if (series[i].type != "real") {
+        var year = dataSet.years[i];
+        var value = interpolatedPoint(year, j);
+        if (!isNaN(value)) {
+          series[i] = {
+            type: "fake",
+            value: value
+          }
+        }
+      }
+    }
+  }
 
   return createVis();
 });
@@ -63,8 +111,8 @@ createVis = function() {
   var xDomain = d3.extent(dataSet.years);
   var yDomain = d3.extent(allValues);
 
-  var x = d3.scale.linear().domain(xDomain).range([bbVis.x, bbVis.x + bbVis.w]);
-  var y = d3.scale.linear().domain(yDomain).range([bbVis.y + bbVis.h, bbVis.y]);
+  var x = d3.scale.linear().domain(xDomain).range([0, bbVis.w]);
+  var y = d3.scale.linear().domain(yDomain).range([bbVis.h, 0]);
 
   // Configure the axes
   var xAxis = d3.svg.axis()
@@ -98,8 +146,8 @@ createVis = function() {
   var populations = color.domain().map(function(name, index) {
     // create x/y pairs for this series
     var values = dataSet.years.map(function(d, i) {
-      if (dataSet.values[index][i].real) return {year: d, population: dataSet.values[index][i].value};
-      return null;
+      if (dataSet.values[index][i].type == "none" ) return null;
+      return {year: d, population: dataSet.values[index][i].value, type: dataSet.values[index][i].type};
     });
 
     // remove missing data values from each series
@@ -119,7 +167,9 @@ createVis = function() {
     .data(populations)
     .enter().append("g")
     .style("stroke", function(d) { return color(d.name); })
-    .attr("class", "dataArea");
+    .style("fill", function(d) { return color(d.name); })
+    .attr("class", "dataArea")
+    .attr('transform', 'translate(' + bbVis.x + ',' + bbVis.y + ')');
 
   population.append("path")
     .attr("class", "line")
@@ -129,6 +179,7 @@ createVis = function() {
   population.selectAll("circle")
     .data(function(d) { return d.values; })
     .enter().append("circle")
+    .attr("class", function(d) { return d.type; })
     .attr("cx", function(d) { return x(d.year); })
     .attr("cy", function(d) { return y(d.population); })
     .attr("r", function(d) { return 2; });
