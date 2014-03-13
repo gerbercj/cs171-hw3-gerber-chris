@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../libs/d3.v3.min.js"></script>
+    <style>
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: lightgrey;
+        }
+
+        .brush .extent {
+            stroke: black;
+            fill-opacity: 0.125;
+            shape-rendering: crispEdges;
+        }
+
+        .brush .handle {
+            stroke: black;
+            fill-opacity: 0.125; }
+
+        .real {
+            opacity: 1.0;
+            clip-path: url(#clip);
+        }
+
+        .fake {
+            opacity: 0.4;
+            fill: none;
+            clip-path: url(#clip);
+        }
+
+        .line {
+          fill: none;
+          clip-path: url(#clip);
+        }
+
+        .concensus {
+          stroke: black;
+          clip-path: url(#clip);
+        }
+
+        .concensus line {
+          stroke-width: 2;
+          stroke-dasharray: 3,3;
+          opacity: 0.8;
+          fill: none;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="vis"></div>
+
+
+	<script src = "differenceGraph.js"></script>
+
+
+</body>
+</html>
