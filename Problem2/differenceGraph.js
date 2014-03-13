@@ -15,7 +15,7 @@ bbPercent = {
   x: 100,
   y: 0,
   w: width - 100,
-  h: 100
+  h: 150
 };
 
 bbVis = {
@@ -80,6 +80,13 @@ function higherPoint(year, series) {
   return result;
 }
 
+function interpolatedPoint(year, series) {
+  var low = lowerPoint(year, series);
+  var high = higherPoint(year, series);
+  if (isNaN(low.year) || isNaN(high.year)) return NaN;
+  return low.value + (high.value-low.value) * (year - low.year) / (high.year-low.year);
+}
+
 d3.csv("timeline.csv", function(data) {
   // initialize dataSet
   dataSet = {years:[], values:[]};
@@ -105,12 +112,11 @@ d3.csv("timeline.csv", function(data) {
     dataSet.values.forEach(function(series, j) {
       if (series[i].type != "real") {
         var year = dataSet.years[i];
-        var low = lowerPoint(year, j);
-        var high = higherPoint(year, j);
-        if (!isNaN(low.year) && !isNaN(high.year)) {
+        var value = interpolatedPoint(year, j);
+        if (!isNaN(value)) {
           series[i] = {
             type: "fake",
-            value: low.value + (high.value-low.value) * (year - low.year) / (high.year-low.year)
+            value: value
           }
         }
       }
@@ -333,7 +339,7 @@ createVis = function() {
     .attr("class", "concensus");
 
   concensusLine.append("path")
-    .attr("class", "concensus line")
+    .attr("class", "line")
     .attr("d", function(d) { return line(d.values); });
 
   concensusLine.selectAll("circle")
@@ -349,28 +355,18 @@ createVis = function() {
       xVis.domain(xPercent.domain());
       yVis.domain(d3.extent(allValues));
     } else {
-      var yMinsAll = dataSet.values.map(function(d, i) {
-        return lowerPoint(brush.extent()[0],i);
-      });
-      var yMins = yMinsAll.reduce(function(prev, curr) {
-        if (isNaN(curr.value)) return prev;
-        return prev.concat([curr.value]);
-      },[]);
+      var yMin = d3.min(dataSet.values.map(function(d,i) {
+        return interpolatedPoint(brush.extent()[0], i);
+      }));
+      if (yMin === undefined) yMin = [d3.min(allValues)];
 
-      if (yMins.length == 0) yMins = [d3.min(allValues)];
-
-      var yMaxsAll = dataSet.values.map(function(d, i) {
-        return higherPoint(brush.extent()[1],i);
-      });
-      var yMaxs = yMaxsAll.reduce(function(prev, curr) {
-        if (isNaN(curr.value)) return prev;
-        return prev.concat([curr.value]);
-      },[]);
-
-      if (yMaxs.length == 0) yMaxs = [d3.max(allValues)];
+      var yMax = d3.max(dataSet.values.map(function(d,i) {
+        return interpolatedPoint(brush.extent()[1], i);
+      }));
+      if (yMax === undefined) yMax = [d3.max(allValues)];
 
       xVis.domain(brush.extent());
-      yVis.domain([d3.min(yMins), d3.max(yMaxs)]);
+      yVis.domain([yMin, yMax]);
     }
     visSvg.select(".x.axis").call(xAxis);
     visSvg.select(".y.axis").call(yAxis);
