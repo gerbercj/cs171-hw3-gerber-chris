@@ -93,8 +93,8 @@ d3.csv("timeline.csv", function(data) {
           }
         }
       }
-    }
-  }
+    });
+  });
 
   return createVis();
 });
