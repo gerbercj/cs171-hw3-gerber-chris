@@ -1,5 +1,7 @@
+// Declare global variables
 var bbVis, createVis, dataSet, height, margin, svg, width;
 
+// Establish margins and bounding boxes
 margin = {
   top: 50,
   right: 50,
@@ -18,8 +20,10 @@ bbVis = {
   h: height - 10
 };
 
+// Initialize global variable
 dataSet = {};
 
+// Create "box" for visualization
 svg = d3.select("#vis").append("svg").attr({
   width: width + margin.left + margin.right,
   height: height + margin.top + margin.bottom
@@ -27,15 +31,15 @@ svg = d3.select("#vis").append("svg").attr({
   transform: "translate(" + margin.left + "," + margin.top + ")"
 });
 
-
+// Load and transform the data
 d3.csv("timeline.csv", function(data) {
-  // initialize dataSet
+  // Initialize dataSet
   dataSet = {years:[], values:[]};
   for (var i=1; i<6; i++) {
     dataSet.values.push([]);
   }
 
-  // convert your csv data and add it to dataSet
+  // Convert your csv data and add it to dataSet
   data.forEach(function(d) {
     dataSet.years.push(parseInt(d.year));
     for (var i=1; i<6; i++) {
@@ -99,7 +103,9 @@ d3.csv("timeline.csv", function(data) {
   return createVis();
 });
 
+// Create the visualization after transforming the data
 createVis = function() {
+  // Map/reduce all points to establish min/max values
   var allValues = dataSet.values.map(function(d) {
     return d.map(function(e) {
       return e.value;
@@ -108,6 +114,7 @@ createVis = function() {
     return prev.concat(next);
   });
 
+  // Configure the domains and ranges
   var xDomain = d3.extent(dataSet.years);
   var yDomain = d3.extent(allValues);
 
@@ -163,6 +170,7 @@ createVis = function() {
     return {name: name, values: values};
   });
 
+  // Add data to the canvas
   var population = svg.selectAll(".dataArea")
     .data(populations)
     .enter().append("g")

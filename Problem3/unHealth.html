@@ -1,69 +1,64 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title></title>
     <script src="../libs/d3.v3.min.js"></script>
     <style>
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: lightgrey;
-            shape-rendering: crispEdges;
-        }
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: lightgrey;
+        shape-rendering: crispEdges;
+      }
 
-        .brush .extent {
-            stroke: black;
-            fill-opacity: 0.125;
-            shape-rendering: crispEdges;
-        }
+      .brush .extent {
+        stroke: black;
+        fill-opacity: 0.125;
+        shape-rendering: crispEdges;
+      }
 
-        .brush .handle {
-            stroke: black;
-            fill-opacity: 0.125; }
+      .brush .handle {
+        stroke: black;
+        fill-opacity: 0.125;
+      }
 
-        .path {
-            stroke: steelblue;
-            fill: none;
-        }
+      .path {
+        stroke: steelblue;
+        fill: none;
+      }
 
-        .overviewPath {
-            stroke-width:1;
-        }
+      .overviewPath {
+        stroke-width:1;
+      }
 
-        .overviewCircle {
-            fill:steelblue;
-        }
+      .overviewCircle {
+        fill:steelblue;
+      }
 
-        .detailPath {
-            stroke-width:2;
-            clip-path: url(#clip);
-        }
+      .detailPath {
+        stroke-width:2;
+        clip-path: url(#clip);
+      }
 
-        .detailCircle {
-            fill:steelblue;
-            clip-path: url(#clip);
-        }
+      .detailCircle {
+        fill:steelblue;
+        clip-path: url(#clip);
+      }
 
-        .detailArea {
-            stroke: none;
-            fill:steelblue;
-            fill-opacity:0.5;
-            clip-path: url(#clip);
-        }
+      .detailArea {
+        stroke: none;
+        fill:steelblue;
+        fill-opacity:0.5;
+        clip-path: url(#clip);
+      }
 
-        .event {
-            fill: blue;
-        }
-
+      .event {
+        fill: blue;
+      }
     </style>
-
-</head>
-<body>
-<div id="visUN"></div>
-
-
-	<script src="unHealth.js"></script>
-
-
-</body>
+  </head>
+  <body>
+    <div id="visUN"></div>
+    <script src="unHealth.js"></script>
+  </body>
 </html>

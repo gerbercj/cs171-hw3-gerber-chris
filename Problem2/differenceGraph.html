@@ -1,58 +1,57 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title></title>
     <script src="../libs/d3.v3.min.js"></script>
     <style>
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: lightgrey;
-        }
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: lightgrey;
+      }
 
-        .brush .extent {
-            stroke: black;
-            fill-opacity: 0.125;
-            shape-rendering: crispEdges;
-        }
+      .brush .extent {
+        stroke: black;
+        fill-opacity: 0.125;
+        shape-rendering: crispEdges;
+      }
 
-        .brush .handle {
-            stroke: black;
-            fill-opacity: 0.125; }
+      .brush .handle {
+        stroke: black;
+        fill-opacity: 0.125; }
 
-        .real {
-            opacity: 1.0;
-            clip-path: url(#clip);
-        }
+      .real {
+        opacity: 1.0;
+        clip-path: url(#clip);
+      }
 
-        .fake {
-            opacity: 0.4;
-            fill: none;
-            clip-path: url(#clip);
-        }
+      .fake {
+        opacity: 0.4;
+        fill: none;
+        clip-path: url(#clip);
+      }
 
-        .line {
-          fill: none;
-          clip-path: url(#clip);
-        }
+      .line {
+        fill: none;
+        clip-path: url(#clip);
+      }
 
-        .concensus {
-          stroke: black;
-          clip-path: url(#clip);
-        }
+      .consensus {
+        stroke: black;
+        clip-path: url(#clip);
+      }
 
-        .concensus .line {
-          stroke-width: 3;
-          opacity: 0.6;
-          fill: none;
-        }
+      .consensus .line {
+        stroke-width: 3;
+        opacity: 0.6;
+        fill: none;
+      }
     </style>
-
-</head>
-<body>
-  <h1>Comparison of World Population Estimates</h1>
-  <p>The below graphs compare five estimates of world population to a concensus average of those estimates. The concensus is shown as a black line, and the estimates are shown in colors. Points that are solid are actual data, and hollow points are calculated values. The top graph shows how much each estimate differs from the concensus as a percentage of the concensus value. The bottom graph shows the absolute difference. By selecting a portion of the top graph, the bottom graph can be zoomed to show the differences in greater detail.
-  <div id="vis"></div>
-	<script src = "differenceGraph.js"></script>
-</body>
+  </head>
+  <body>
+    <h1>Comparison of World Population Estimates</h1>
+    <p>The below graphs compare five estimates of world population to a consensus average of those estimates. The consensus is shown as a black line, and the estimates are shown in colors. Points that are solid are actual data, and hollow points are calculated values. The top graph shows how much each estimate differs from the consensus as a percentage of the consensus value. The bottom graph shows the absolute difference. By selecting a portion of the top graph, the bottom graph can be zoomed to show the differences in greater detail.
+    <div id="vis"></div>
+    <script src = "differenceGraph.js"></script>
+  </body>
 </html>

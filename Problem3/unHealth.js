@@ -1,5 +1,6 @@
 // NOTE: Based upon ideas from http://bl.ocks.org/mbostock/1667367
 
+// Establish margins and bounding boxes
 var margin = {
   top: 50,
   right: 50,
@@ -25,8 +26,10 @@ var bbDetail = {
   h: 300
 };
 
+// Date parsing helper
 var parseDate = d3.time.format("%b %Y").parse;
 
+// Determin ranges
 var xOverview = d3.time.scale().range([0, bbOverview.w]),
     xDetail = d3.time.scale().range([0, bbDetail.w]),
     yOverview = d3.scale.linear().range([bbOverview.h, 0]),
@@ -37,10 +40,12 @@ var xAxisOverview = d3.svg.axis().scale(xOverview).orient("bottom"),
     yAxisOverview = d3.svg.axis().scale(yOverview).ticks(4).orient("left"),
     yAxisDetail = d3.svg.axis().scale(yDetail).orient("left");
 
+// Set up the brush
 var brush = d3.svg.brush()
   .x(xOverview)
   .on("brush", brushed);
 
+// Create the line/area helpers
 var lineOverview = d3.svg.line()
   .interpolate("linear")
   .x(function(d) { return xOverview(d.date); })
@@ -57,6 +62,7 @@ var areaDetail = d3.svg.area()
   .y0(bbDetail.h)
   .y1(function(d) { return yDetail(d.value); });
 
+// Create the SVG "boxes"
 var svg = d3.select("#visUN").append("svg")
   .attr({
     width: width + margin.left + margin.right,
@@ -75,18 +81,22 @@ var detail = svg.append("g")
     transform: "translate(" + (margin.left + bbDetail.x) + "," + (margin.top + bbDetail.y) + ")"
   });
 
+// Create a clipping path for the zoom
 detail.append("defs").append("clipPath")
   .attr("id", "clip")
   .append("rect")
     .attr("width", bbDetail.w)
     .attr("height", bbDetail.h);
 
+// Read the data
 d3.csv("unHealth.csv", type, function(data) {
+  // Determine the domains
   xDetail.domain(d3.extent(data.map(function(d) { return d.date; })));
   yDetail.domain([0,d3.max(data.map(function(d) { return d.value; }))]);
   xOverview.domain(xDetail.domain());
   yOverview.domain(yDetail.domain());
 
+  // Add the SVG objects
   overview.append("path")
     .datum(data)
     .attr("class", "path overviewPath")
@@ -116,6 +126,7 @@ d3.csv("unHealth.csv", type, function(data) {
       .attr("y", -6)
       .attr("height", bbOverview.h + 7);
 
+  // Create the event labels
   events = [
     {x:280, y:5, start:'Nov 2011', end:'Jul 2012', text:'<tspan text-decoration="underline">Initial spike in activity</tspan> &#x2192;'},
     {x:645, y:45, start:'Nov 2012', end:'Jul 2013', text:'&#x2196; <tspan text-decoration="underline">New steady state</tspan>' }
@@ -127,6 +138,7 @@ d3.csv("unHealth.csv", type, function(data) {
     brushed();
   }
 
+  // Draw the event labels
   overview.selectAll(".events")
     .data(events)
     .enter().append("g")
@@ -137,6 +149,7 @@ d3.csv("unHealth.csv", type, function(data) {
     .attr("class", "event")
     .on("click", function(d) { return eventClickCallback(d.start, d.end); });
 
+  // Draw the lines and points
   detail.append("path")
     .datum(data)
     .attr("class", "path detailPath")
@@ -163,9 +176,9 @@ d3.csv("unHealth.csv", type, function(data) {
   detail.append("g")
     .attr("class", "y axis")
     .call(yAxisDetail);
-
 });
 
+// Handle brushing
 function brushed() {
   xDetail.domain(brush.empty() ? xOverview.domain() : brush.extent());
   detail.select(".detailPath").attr("d", lineDetail);
@@ -174,6 +187,7 @@ function brushed() {
   detail.select(".x.axis").call(xAxisDetail);
 }
 
+// Transform the dataset
 function type(d) {
   d.date = parseDate(d.date);
   d.value = parseInt(d.women);

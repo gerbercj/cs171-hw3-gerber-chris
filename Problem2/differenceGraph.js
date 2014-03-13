@@ -1,5 +1,7 @@
+// Define some global variables
 var bbVis, createVis, dataSet, height, margin, svg, width, allValues, allPercents;
 
+// Set margins and bounding boxes
 margin = {
   top: 50,
   right: 50,
@@ -25,11 +27,13 @@ bbVis = {
   h: height - 250
 };
 
+// Initialize some global variables
 dataSet = {};
-concensus = {years:[],values:[]};
+consensus = {years:[],values:[]};
 allValues = [];
 allPercents = [];
 
+// Create the "boxes" to work in
 svg = d3.select("#vis").append("svg").attr({
   width: width + margin.left + margin.right,
   height: height + margin.top + margin.bottom
@@ -49,13 +53,14 @@ var visSvg = svg.append("g")
     transform: "translate(" + bbVis.x + ',' + bbVis.y + ")"
   });
 
+// Add a clipping path for the zoomed area
 visSvg.append("defs").append("clipPath")
   .attr("id", "clip")
   .append("rect")
     .attr("width", bbVis.w)
     .attr("height", bbVis.h);
 
-// interpolate missing values helpers
+// Interpolate missing values helpers
 function lowerPoint(year, series) {
   var result = {year:NaN, value:NaN}
   for (var i = 0; i < dataSet.years.length; i++) {
@@ -87,14 +92,15 @@ function interpolatedPoint(year, series) {
   return low.value + (high.value-low.value) * (year - low.year) / (high.year-low.year);
 }
 
+// Read in the data set and transform it
 d3.csv("timeline.csv", function(data) {
-  // initialize dataSet
+  // Initialize dataSet
   dataSet = {years:[], values:[]};
   for (var i=1; i<6; i++) {
     dataSet.values.push([]);
   }
 
-  // convert your csv data and add it to dataSet
+  // Convert your csv data and add it to dataSet
   data.forEach(function(d) {
     dataSet.years.push(parseInt(d.year));
     for (var i=1; i<6; i++) {
@@ -107,7 +113,7 @@ d3.csv("timeline.csv", function(data) {
     }
   });
 
-  // actually do the interpolation
+  // Actually do the interpolation
   dataSet.years.forEach(function(year, i) {
     dataSet.values.forEach(function(series, j) {
       if (series[i].type != "real") {
@@ -123,7 +129,7 @@ d3.csv("timeline.csv", function(data) {
     });
   });
 
-  // generate consensus line
+  // Generate consensus line
   dataSet.years.forEach(function(year, i) {
     var points = dataSet.values.reduce(function(prev, curr) {
       if (curr[i].type == "none") return prev;
@@ -133,12 +139,12 @@ d3.csv("timeline.csv", function(data) {
       return prev + curr.value;
     },0);
     var average = sum / points.length;
-    concensus.years.push(year);
-    concensus.values.push(average);
+    consensus.years.push(year);
+    consensus.values.push(average);
   });
 
-  // calculate percent delta from concensus
-  concensus.values.forEach(function(item, i) {
+  // Calculate percent delta from consensus
+  consensus.values.forEach(function(item, i) {
     dataSet.values.forEach(function(series, j) {
       if (series[i].type == "none") {
         series[i].percent = NaN;
@@ -148,6 +154,7 @@ d3.csv("timeline.csv", function(data) {
     });
   });
 
+  // allValues is all of the dots
   allValues = dataSet.values.map(function(d) {
     return d.map(function(e) {
       return e.value;
@@ -159,6 +166,7 @@ d3.csv("timeline.csv", function(data) {
     return prev.concat([curr]);
   },[]);
 
+  // allPercents are used to calculate ranges
   allPercents = dataSet.values.map(function(d) {
     return d.map(function(e) {
       return e.percent;
@@ -170,6 +178,7 @@ d3.csv("timeline.csv", function(data) {
   return createVis();
 });
 
+// Do the drawing after all the data processing
 createVis = function() {
   var xDomainPercent = d3.extent(dataSet.years);
   var yDomainPercent = d3.extent(allPercents);
@@ -266,7 +275,7 @@ createVis = function() {
     .y(function(d) { return yVis(d.population); });
 
   var populations = color.domain().map(function(name, index) {
-    // create x/y pairs for this series
+    // Create x/y pairs for this series
     var values = dataSet.years.map(function(d, i) {
       if (dataSet.values[index][i].type == "none" ) return null;
       return {
@@ -277,7 +286,7 @@ createVis = function() {
       };
     });
 
-    // remove missing data values from each series
+    // Remove missing data values from each series
     values = values.reduce(function(prev, curr) {
       if (!prev) {
         if (curr) return [curr];
@@ -290,17 +299,19 @@ createVis = function() {
     return {name: name, values: values};
   });
 
-  var concensusValues = function() {
-    var values = concensus.years.map(function(d, i) {
+  // Create a helper for the consensus line
+  var consensusValues = function() {
+    var values = consensus.years.map(function(d, i) {
       return {
         year: d,
-        population: concensus.values[i]
+        population: consensus.values[i]
       };
     });
 
-    return [{name:"concensus", values:values}];
+    return [{name:"consensus", values:values}];
   }
 
+  // Draw a bunch of stuff
   var percentGroup = percentSvg.selectAll(".percentArea")
     .data(populations)
     .enter().append("g")
@@ -332,17 +343,17 @@ createVis = function() {
     .attr("cy", function(d) { return yVis(d.population); })
     .attr("r", 3);
 
-  var concensusLine = visSvg.selectAll(".concensus")
-    .data(concensusValues)
+  var consensusLine = visSvg.selectAll(".consensus")
+    .data(consensusValues)
     .enter().append("g")
     .style("stroke", "black")
-    .attr("class", "concensus");
+    .attr("class", "consensus");
 
-  concensusLine.append("path")
+  consensusLine.append("path")
     .attr("class", "line")
     .attr("d", function(d) { return line(d.values); });
 
-  concensusLine.selectAll("circle")
+  consensusLine.selectAll("circle")
     .data(function(d) { return d.values; })
     .enter().append("circle")
     .attr("class", "fake")
@@ -350,6 +361,7 @@ createVis = function() {
     .attr("cy", function(d) { return yVis(d.population); })
     .attr("r", 3);
 
+  // Handle the zooming when brushing
   function brushed() {
     if (brush.empty()) {
       xVis.domain(xPercent.domain());
