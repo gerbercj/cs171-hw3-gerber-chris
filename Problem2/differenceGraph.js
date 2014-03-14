@@ -60,36 +60,23 @@ visSvg.append("defs").append("clipPath")
     .attr("width", bbVis.w)
     .attr("height", bbVis.h);
 
-// Interpolate missing values helpers
-function lowerPoint(year, series) {
-  var result = {year:NaN, value:NaN}
-  for (var i = 0; i < dataSet.years.length; i++) {
-    if (dataSet.years[i] >= year) break;
-    if (dataSet.values[series][i].type == "real") {
-      result.year = dataSet.years[i];
-      result.value = dataSet.values[series][i].value;
-    }
-  }
-  return result;
-}
-
-function higherPoint(year, series) {
-  var result = {year:NaN, value:NaN}
-  for (var i = dataSet.years.length - 1; i >= 0; i--) {
-    if (dataSet.years[i] <= year) break;
-    if (dataSet.values[series][i].type == "real") {
-      result.year = dataSet.years[i];
-      result.value = dataSet.values[series][i].value;
-    }
-  }
-  return result;
-}
-
+// Interpolate missing values helper
 function interpolatedPoint(year, series) {
-  var low = lowerPoint(year, series);
-  var high = higherPoint(year, series);
-  if (isNaN(low.year) || isNaN(high.year)) return NaN;
-  return low.value + (high.value-low.value) * (year - low.year) / (high.year-low.year);
+  var years = dataSet.years.reduce(function(prev, curr, i) {
+    if (dataSet.values[series][i].type != "real") return prev;
+    return prev.concat([curr]);
+  },[]);
+
+  // Don't create points outside the series
+  if (year < d3.min(years) || year > d3.max(years)) return NaN;
+
+  var values = dataSet.values[series].reduce(function(prev, curr) {
+    if (curr.type != "real") return prev;
+    return prev.concat([curr]);
+  },[]).map(function(d, i) { return d.value; });
+
+  // Calculate the value
+  return d3.scale.linear().domain(years).range(values)(year);
 }
 
 // Read in the data set and transform it
@@ -380,7 +367,14 @@ createVis = function() {
       xVis.domain(brush.extent());
       yVis.domain([yMin, yMax]);
     }
-    visSvg.select(".x.axis").call(xAxis);
+    visSvg.select(".x.axis").call(xAxis)
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.7em")
+      .attr("dy", "0.1em")
+      .attr("transform", function(d) {
+        return "rotate(-90)"
+      });
     visSvg.select(".y.axis").call(yAxis);
     visSvg.selectAll(".real").attr("cx", function(d) { return xVis(d.year); });
     visSvg.selectAll(".real").attr("cy", function(d) { return yVis(d.population); });
